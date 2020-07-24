@@ -7,6 +7,7 @@ from selenium.webdriver.support.expected_conditions import presence_of_element_l
 import sys
 import requests
 from bs4 import BeautifulSoup
+import os
 
 def get_driver():
     executable_path = "C:\\Users\\Dhanvi\\Headless_Browsers\\chromedriver.exe"
@@ -34,8 +35,9 @@ def print_data(url,index):
 
 
 def copy_text(name,url):
+    os.mkdir(name)
     try:
-        f = open(name+".txt","w")
+        f = open(name+"\\English.txt","w",encoding="utf-8")
         r = requests.get(url)
         soup = BeautifulSoup(r.text,"html.parser")
         div_text_center = soup.find_all("div",attrs={"class":"text-center"})
@@ -44,11 +46,15 @@ def copy_text(name,url):
                 text = ' '.join(div.text.split())
                 f.write(text+"\n")
         p_tags = soup.find_all("p")
-        go_through = len(p_tags)//2
-        for p in p_tags[:go_through]:
-            if(p.text.strip() != ""):
-                text = ' '.join(p.text.split())
-                f.write(text+"\n")
+        if(len(p_tags) != 0):
+            go_through = len(p_tags)//2
+            for p in p_tags[:go_through]:
+                if(p.text.strip() != ""):
+                    text = ' '.join(p.text.split())
+                    f.write(text+"\n")
+        else:
+            gmail_default = soup.find("div",attrs={"class":"gmail_default"})
+            f.write(gmail_default.text.strip())
         f.close()
         release_lang = soup.find("div",attrs={"class":"ReleaseLang"})
         a_tags = release_lang.find_all("a")
@@ -57,24 +63,32 @@ def copy_text(name,url):
             print("Starting lang")
             webdriver2 = get_driver()
             with webdriver2 as dri:
-                wait = WebDriverWait(dri,20)
+                wait = WebDriverWait(dri,30)
                 dri.get(url)
                 wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
                 print("wait done")
                 main_div = dri.find_elements_by_class_name("ReleaseLang")[0]
+                dri.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 a = main_div.find_elements_by_tag_name("a")[i]
-                f = open(name+""+a.text+".txt",'w',encoding="utf-8")
                 a.click()
+                f = open(name+"\\"+a.text+".txt",'w',encoding="utf-8")
                 wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
                 modal = dri.find_elements_by_class_name("ModalWindow")[0]
                 text_center = modal.find_elements_by_class_name("text-center")
                 for text1 in text_center:
                     f.write(text1.text.strip()+"\n")
                 p_tags = modal.find_elements_by_tag_name("p")
-                for p in p_tags:
-                    f.write(p.text.strip()+"\n")
+                if(len(p_tags) != 0):
+                    for p in p_tags:
+                        f.write(p.text.strip()+"\n")
+                else:
+                    pre = modal.find_elements_by_tag_name("pre")
+                    f.write(pre.text.strip()+"\n")
                 print("loop done")
                 f.close()
+                close_button = modal.find_elements_by_id("btnClose")[0]
+                close_button.click()
+                dri.close()
     except AttributeError as a:
         print('In error')
         print(a)
@@ -103,7 +117,7 @@ def main():
         select_value(wait,select_year,year)
         div = driver.find_elements_by_class_name("content-area")[0]
         uls = div.find_elements_by_tag_name("ul")
-        for ul in uls[1:2]:
+        for ul in uls[1:3]:
             for a in ul.find_elements_by_tag_name("a"):
                 print(a.text)
                 print(a.get_attribute("href"))
