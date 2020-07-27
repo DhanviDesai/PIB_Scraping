@@ -35,6 +35,7 @@ def print_data(url,index):
 
 
 def copy_text(name,url):
+    name = name.replace(':','')
     os.mkdir(name)
     try:
         f = open(name+"\\English.txt","w",encoding="utf-8")
@@ -61,37 +62,40 @@ def copy_text(name,url):
         print(len(a_tags))
         for i in range(len(a_tags)):
             print("Starting lang")
-            webdriver2 = get_driver()
-            with webdriver2 as dri:
-                wait = WebDriverWait(dri,30)
-                dri.get(url)
-                wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
-                print("wait done")
-                main_div = dri.find_elements_by_class_name("ReleaseLang")[0]
-                dri.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                a = main_div.find_elements_by_tag_name("a")[i]
-                a.click()
-                f = open(name+"\\"+a.text+".txt",'w',encoding="utf-8")
-                wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
-                modal = dri.find_elements_by_class_name("ModalWindow")[0]
-                text_center = modal.find_elements_by_class_name("text-center")
-                for text1 in text_center:
-                    f.write(text1.text.strip()+"\n")
-                p_tags = modal.find_elements_by_tag_name("p")
-                if(len(p_tags) != 0):
-                    for p in p_tags:
-                        f.write(p.text.strip()+"\n")
-                else:
-                    pre = modal.find_elements_by_tag_name("pre")
-                    f.write(pre.text.strip()+"\n")
-                print("loop done")
-                f.close()
-                close_button = modal.find_elements_by_id("btnClose")[0]
-                close_button.click()
-                dri.close()
-    except AttributeError as a:
+            try:
+                webdriver2 = get_driver()
+                with webdriver2 as dri:
+                    wait = WebDriverWait(dri,50)
+                    dri.get(url)
+                    wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
+                    print("wait done")
+                    dri.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    main_div = dri.find_elements_by_class_name("ReleaseLang")[0]
+                    a = main_div.find_elements_by_tag_name("a")[i]
+                    f = open(name+"\\"+a.text+".txt",'w',encoding="utf-8")
+                    a.click()
+                    wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
+                    modal = dri.find_elements_by_class_name("ModalWindow")[0]
+                    text_center = modal.find_elements_by_class_name("text-center")
+                    for text1 in text_center:
+                        f.write(text1.text.strip()+"\n")
+                    p_tags = modal.find_elements_by_tag_name("p")
+                    if(len(p_tags) != 0):
+                        for p in p_tags:
+                            f.write(p.text.strip()+"\n")
+                    else:
+                        pre = modal.find_elements_by_tag_name("pre")
+                        f.write(pre.text.strip()+"\n")
+                    print("loop done")
+                    f.close()
+                    close_button = modal.find_elements_by_id("btnClose")[0]
+                    close_button.click()
+                    dri.close()
+            except:
+                print('Inside error')
+                continue
+    except :
         print('In error')
-        print(a)
 
 def select_value(wait,select,value):
     select.select_by_visible_text(value)
@@ -106,7 +110,7 @@ def main():
     webdriver1 = get_driver()
     print('Finished initalize')
     with webdriver1 as driver:
-        wait = WebDriverWait(driver,30)
+        wait = WebDriverWait(driver,50)
         driver.get(query_url)
         wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
         select_day = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlday")[0])
