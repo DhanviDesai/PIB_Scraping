@@ -1,0 +1,52 @@
+Ministry of Earth Science
+Long Range Forecast Update for The 2020 Southwest Monsoon Rainfall Southwest monsoon season (June to September) is most likely to be NORMAL (96% to 104% of long period average (LPA))The season rainfall is likely to be 107% of LPA over North-West India, 103% of LPA over Central India, 102% of LPA over South Peninsula and 96% of LPA over North-East IndiaSome possibility of development of weak La Niña conditions in the later part of the monsoon season
+Posted On: 01 JUN 2020 3:31PM by PIB Delhi
+The India Meteorological Department (IMD) here today issued the second stage of Long Range Forecast Update for the 2020 Southwest Monsoon Rainfall. The updated forecast on SW Monsoon was released by Dr. M. Rajeevan, Secretary, Ministry of Earth Sciences and Dr. M. Mohapatra, Director General of IMD at a press conference. Dr. Rajeevan said that overall, the SW Monsoon will be normal or above normal this year. They also announced the onset of SW Monsoon over Kerala as the conditions there met all parameters.
+Background
+India Meteorological Department (IMD) had issued the first stage operational long-range forecasts for the southwest monsoon season (June-September) rainfall over the country as a whole on 15th April. Now, IMD has prepared the updated forecast, which is presented here. In addition, forecasts for the monthly rainfall for July & August over the country as a whole, and forecast for the seasonal rainfall for the 4 broad geographical regions of India (NW India, NE India, Central India and South Peninsula) are also presented. The operational forecasts have been prepared based on the state-of-the-art, indigenously developed statistical models.
+The update forecast for the southwest monsoon season (June-September) rainfall over the country as a whole was prepared using a 6-parameter Statistical Ensemble Forecasting System (SEFS). The seasonal rainfall over the 4 broad geographical regions and monthly rainfall for the July and August over the country as a whole have been prepared using Principal Component Regression (PCR) models with different set of parameters.
+Experimental forecast based on the Ministry’s Monsoon Mission Coupled Forecasting System (MMCFS) is also presented. The latest version of the high resolution MMCFS implemented at the Office of Climate Research and Services, IMD, Pune was used for this purpose.
+Sea Surface Temperature Conditions in the Pacific & Indian Oceans
+Currently normal sea surface temperatures are observed across most of the equatorial Pacific Ocean. Many atmospheric variables over the region indicate ENSO Neutral to cool ENSO neutral conditions over the region. The latest forecasts from MMCFS & other global models together indicate cool ENSO neutral conditions are likely to prevail during most part of the monsoon season. However, a few other climate models indicate possibility of development of weak La Niña conditions in the later part of the season or thereafter.
+At present, Neutral Indian Ocean Dipole (IOD) conditions are prevailing over the region. A positive (negative) IOD is associated with a stronger (weaker) than normal monsoon. The latest forecasts from global coupled models suggest that these neutral IOD conditions are likely to continue during the monsoon season.
+The prevailing and predicted SST conditions over the Pacific and Indian Oceans are favourable for a normal monsoon season.
+Forecasts from the Monsoon Mission Coupled Forecasting System (MMCFS)
+The latest experimental forecast based on the MMCFS suggests that there is high probability for the 2020 monsoon season (June to September) rainfall to be above normal to excess (More than 104 % of LPA). Quantitatively, the 2020 monsoon rainfall is likely to be 107% of LPA with a model error of ±4%.
+The second Stage Forecasts for the 2020 Southwest Monsoon Rainfall
+Seasonal (June-September) Rainfall over the country as a whole
+Quantitatively, the 2020 monsoon season (June to September) rainfall for the country as a whole is likely to be 102% of the long period average (LPA) with a model error of ±4%. The Long Period Average (LPA) rainfall over the country as a whole for the period 1961-2010 is 88 cm.
+The 5 category probability forecasts for the Monsoon Season (June to September) rainfall over the country as a whole is given below.
+Category
+Rainfall Range
+(% of LPA)
+Forecast Probability (%)
+For 2020 monsoon season
+Climatological
+Probability (%)
+Deficient
+< 90
+5
+16
+Below Normal
+90 - 96
+15
+17
+Normal
+96 -104
+41
+33
+Above Normal
+104 -110
+25
+16
+Excess
+> 110
+14
+17
+The probability forecasts suggest a very low probability (only 5%) for monsoon rainfall to be deficient. On the other hand, it suggests a very high probability for monsoon rainfall to be normal (41%).
+Season (June-September) Rainfall over the Broad Geographical Regions
+The 2020 monsoon season (June to September) rainfall is likely to be 107% of LPA over North-West India, 103% of LPA over Central India, 102% of LPA over South Peninsula, and 96% of LPA over North-East India, all with a model error of ± 8 %. Thus, monsoon rainfall is expected to be spatially well distributed.
+Monthly (July & August) Rainfall over the country as a whole
+The rainfall over the country as a whole is likely to be 103% of its LPA during July and 97% of LPA during August, both with a model error of ± 9 %.
+*****
+NB/KGS/(IMD releases)

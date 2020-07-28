@@ -1,134 +1,144 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException,WebDriverException,ElementClickInterceptedException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 import sys
 import requests
 from bs4 import BeautifulSoup
-import os
+from pathlib import Path
+import time
 
 def get_driver():
-    executable_path = "C:\\Users\\Dhanvi\\Headless_Browsers\\chromedriver.exe"
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    webdriver1 = webdriver.Chrome(executable_path=executable_path,options=chrome_options)
-    return webdriver1
-
-def print_data(url,index):
-    webdriver1 = get_driver()
-    with webdriver1 as driver:
-        wait = WebDriverWait(driver,20)
-        driver.get(url)
-        wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
-        main_div = driver.find_elements_by_class_name("ReleaseLang")[0]
-        a = main_div.find_elements_by_tag_name("a")[index]
-        a.click()
-        main_div_modal = driver.find_elements_by_class_name("ModalWindow")[0]
-        div_text_center = main_div_modal.find_elements_by_class_name("text-center")
-        for text_center in div_text_center:
-            print(text_center.text.strip())
-        p_tags = main_div_modal.find_elements_by_tag_name("p")
-        for p in p_tags:
-            print(p.text.strip())
-
-
-def copy_text(name,url):
-    name = name.replace(':','')
-    os.mkdir(name)
     try:
-        f = open(name+"\\English.txt","w",encoding="utf-8")
-        r = requests.get(url)
-        soup = BeautifulSoup(r.text,"html.parser")
-        div_text_center = soup.find_all("div",attrs={"class":"text-center"})
-        for div in div_text_center:
-            if(div.text.strip() != ""):
-                text = ' '.join(div.text.split())
-                f.write(text+"\n")
-        p_tags = soup.find_all("p")
-        if(len(p_tags) != 0):
-            go_through = len(p_tags)//2
-            for p in p_tags[:go_through]:
-                if(p.text.strip() != ""):
-                    text = ' '.join(p.text.split())
-                    f.write(text+"\n")
-        else:
-            gmail_default = soup.find("div",attrs={"class":"gmail_default"})
-            f.write(gmail_default.text.strip())
-        f.close()
-        release_lang = soup.find("div",attrs={"class":"ReleaseLang"})
-        a_tags = release_lang.find_all("a")
-        print(len(a_tags))
-        for i in range(len(a_tags)):
+        executable_path = "C:\\Users\\Dhanvi\\Headless_Browsers\\chromedriver.exe"
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        webdriver1 = webdriver.Chrome(executable_path=executable_path,options=chrome_options)
+        return webdriver1
+    except WebDriverException as e:
+        print(e)
+        get_driver()
+
+def copy_text(date,month,year,url,dri):
+    start1 = time.time()
+    rid = url.split("=")[1]
+    path = "C:\\Users\\Dhanvi\\PIB_Scraping"+"\\"+year+"\\"+month+"\\"+date+"\\"+rid+"\\"
+    Path(path).mkdir(parents=True,exist_ok=True)
+    f = open(path+"English.txt","w",encoding="utf-8")
+    r = requests.get(url)
+    soup = BeautifulSoup(r.text,"html.parser")
+    div_text_center = soup.find_all("div",attrs={"class":"text-center"})
+    for div in div_text_center:
+        if(div.text.strip() != ""):
+            text = ' '.join(div.text.split())
+            f.write(text+"\n")
+    p_tags = soup.find_all("p")
+    go_through = len(p_tags)//2
+    for p in p_tags[:go_through]:
+        if(p.text.strip() != ""):
+            text = ' '.join(p.text.split())
+            f.write(text+"\n")
+    gmail_default = soup.find("div",attrs={"class":"gmail_default"})
+    if(gmail_default is not None):
+        f.write(gmail_default.text.strip())
+    f.close()
+    release_lang = soup.find("div",attrs={"class":"ReleaseLang"})
+    if(release_lang is None):
+        return
+    a_tags = release_lang.find_all("a")
+    print(len(a_tags))
+    for i in range(len(a_tags)):
+        try:
             print("Starting lang")
-            try:
-                webdriver2 = get_driver()
-                with webdriver2 as dri:
-                    wait = WebDriverWait(dri,50)
-                    dri.get(url)
-                    wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
-                    print("wait done")
-                    dri.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                    main_div = dri.find_elements_by_class_name("ReleaseLang")[0]
-                    a = main_div.find_elements_by_tag_name("a")[i]
-                    f = open(name+"\\"+a.text+".txt",'w',encoding="utf-8")
-                    a.click()
-                    wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
-                    modal = dri.find_elements_by_class_name("ModalWindow")[0]
-                    text_center = modal.find_elements_by_class_name("text-center")
-                    for text1 in text_center:
-                        f.write(text1.text.strip()+"\n")
-                    p_tags = modal.find_elements_by_tag_name("p")
-                    if(len(p_tags) != 0):
-                        for p in p_tags:
-                            f.write(p.text.strip()+"\n")
-                    else:
-                        pre = modal.find_elements_by_tag_name("pre")
-                        f.write(pre.text.strip()+"\n")
-                    print("loop done")
-                    f.close()
-                    close_button = modal.find_elements_by_id("btnClose")[0]
-                    close_button.click()
-                    dri.close()
-            except:
-                print('Inside error')
-                continue
-    except :
-        print('In error')
+            wait = WebDriverWait(dri,100)
+            dri.get(url)
+            wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
+            print("wait done")
+            dri.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            main_div = dri.find_elements_by_class_name("ReleaseLang")[0]
+            a = main_div.find_elements_by_tag_name("a")[i]
+            text_name = a.text
+            print('Handling language',text_name)
+            f = open(path+text_name+".txt",'w',encoding="utf-8")
+            a.click()
+            wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
+            modal = dri.find_elements_by_class_name("ModalWindow")[0]
+            text_center = modal.find_elements_by_class_name("text-center")
+            print('Number of text_center',len(text_center))
+            for text1 in text_center:
+                f.write(text1.text.strip()+"\n")
+            p_tags = modal.find_elements_by_tag_name("p")
+            print('Number of p_tags',len(p_tags));
+            for p in p_tags:
+                if(p.text.strip() != ""):
+                    f.write(p.text.strip()+"\n")
+            pre = modal.find_elements_by_tag_name("pre")
+            if(len(pre)>0):
+                f.write(pre[0].text.strip()+"\n")
+            print("loop done")
+            f.close()
+        except StaleElementReferenceException as e:
+            print(e)
+        except ElementClickInterceptedException as e:
+            print(e)
+    end1 = time.time()
+    print('Time taken for one document for all '+str(len(a_tags))+' languages is ',end1-start1)
 
 def select_value(wait,select,value):
     select.select_by_visible_text(value)
     wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
-    print('Finished selecting')
+    print('Finished selecting',value)
 
-def main():
+def main(day,month,year):
+    start = time.time()
     query_url = "https://www.pib.gov.in/allRel.aspx"
-    month = sys.argv[2]
-    day = sys.argv[1]
-    year = sys.argv[3]
     webdriver1 = get_driver()
+    dri = get_driver()
     print('Finished initalize')
     with webdriver1 as driver:
         wait = WebDriverWait(driver,50)
         driver.get(query_url)
         wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
+        print('Finished loading')
         select_day = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlday")[0])
-        select_value(wait,select_day,day)
+        if(day != select_day.first_selected_option):
+            select_value(wait,select_day,day)
         select_month = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlMonth")[0])
-        select_value(wait,select_month,month)
+        if(month != select_month.first_selected_option):
+            select_value(wait,select_month,month)
         select_year = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlYear")[0])
-        select_value(wait,select_year,year)
+        if(year!= select_year.first_selected_option):
+            select_value(wait,select_year,year)
         div = driver.find_elements_by_class_name("content-area")[0]
-        uls = div.find_elements_by_tag_name("ul")
-        for ul in uls[1:3]:
-            for a in ul.find_elements_by_tag_name("a"):
-                print(a.text)
-                print(a.get_attribute("href"))
-                copy_text(a.text,a.get_attribute("href"))
+        div_search = driver.find_elements_by_class_name("search_box_result")[0].text
+        num = div_search.split(' ')[1]
+        num = int(num)
+        for i in range(1,num):
+            try:
+                ul = div.find_elements_by_xpath('//*[@id="form1"]/section[2]/div/div[7]/div/div/ul['+str(i)+']')[0]
+                li = ul.find_elements_by_tag_name("li")[0]
+                # ministy_name = li.find_elements_by_class_name("font104")[0].text
+                ul_leftul = li.find_elements_by_tag_name("ul")[0]
+                lis = ul_leftul.find_elements_by_tag_name("li")
+                for li_one in lis:
+                    a = li_one.find_elements_by_tag_name("a")[0]
+                    print(a.text)
+                    print(a.get_attribute("href"))
+                    copy_text(day,month,year,a.get_attribute("href"),dri)
+            except IndexError as e:
+                print(e)
+                break
+        driver.close()
+    dri.close()
+    end = time.time()
+    print('Time taken',end-start)
 
-        # print(len(uls))
-        print("Finished waiting")
 
 if __name__ == "__main__":
-    main()
+    month = sys.argv[2]
+    day = sys.argv[1]
+    year = sys.argv[3]
+    main(day,month,year)
