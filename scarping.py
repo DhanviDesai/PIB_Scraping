@@ -106,7 +106,6 @@ def main(day,month,year):
     start = time.time()
     query_url = "https://www.pib.gov.in/allRel.aspx"
     webdriver1 = get_driver()
-    dri = get_driver()
     print('Finished initalize')
     memo = {}
     with webdriver1 as driver:
@@ -115,18 +114,28 @@ def main(day,month,year):
         wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
         print('Finished loading')
         select_day = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlday")[0])
-        if(day != select_day.first_selected_option):
+        if(day != select_day.first_selected_option.text):
             select_value(wait,select_day,day)
+        select_day = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlday")[0])
+        if(select_day.first_selected_option.text != day):
+            return
         select_month = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlMonth")[0])
-        if(month != select_month.first_selected_option):
+        if(month != select_month.first_selected_option.text):
             select_value(wait,select_month,month)
+        select_month = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlMonth")[0])
+        if(select_month.first_selected_option.text != month):
+            return
         select_year = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlYear")[0])
-        if(year!= select_year.first_selected_option):
+        if(year!= select_year.first_selected_option.text):
             select_value(wait,select_year,year)
+        select_year = Select(driver.find_elements_by_id("ContentPlaceHolder1_ddlYear")[0])
+        if(select_year.first_selected_option.text != year):
+            return
         div = driver.find_elements_by_class_name("content-area")[0]
         div_search = driver.find_elements_by_class_name("search_box_result")[0].text
         num = div_search.split(' ')[1]
         num = int(num)
+        dri = get_driver()
         for i in range(1,num+1):
             try:
                 ul = div.find_elements_by_xpath('//*[@id="form1"]/section[2]/div/div[7]/div/div/ul['+str(i)+']')[0]
@@ -139,15 +148,17 @@ def main(day,month,year):
                     print(a.text)
                     print(a.get_attribute("href"))
                     memo = copy_text(day,month,year,a.get_attribute("href"),dri,memo)
+                    break
+                break
             except IndexError as e:
                 print(e)
                 break
         driver.close()
     dri.close()
-    for key in memo.keys():
-        csv_list = memo[key]
-        df = pd.DataFrame(csv_list)
-        df.to_csv(month+"-"+key+".csv",index=False,header=False,mode='a')
+    # for key in memo.keys():
+    #     csv_list = memo[key]
+    #     df = pd.DataFrame(csv_list)
+    #     df.to_csv(month+"-"+key+".csv",index=False,header=False,mode='a')
     end = time.time()
     print('Time taken',end-start)
 
