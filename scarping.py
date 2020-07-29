@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from pathlib import Path
 import time
+import pandas as pd
 
 def get_driver():
     try:
@@ -22,12 +23,12 @@ def get_driver():
         print(e)
         get_driver()
 
-def copy_text(date,month,year,url,dri):
+def copy_text(date,month,year,url,dri,memo):
     start1 = time.time()
     rid = url.split("=")[1]
     path = "C:\\Users\\Dhanvi\\PIB_Scraping"+"\\"+year+"\\"+month+"\\"+date+"\\"+rid+"\\"
     Path(path).mkdir(parents=True,exist_ok=True)
-    f = open(path+"English.txt","w",encoding="utf-8")
+    f = open(path+""+rid+"English.txt","w",encoding="utf-8")
     r = requests.get(url)
     soup = BeautifulSoup(r.text,"html.parser")
     div_text_center = soup.find_all("div",attrs={"class":"text-center"})
@@ -62,7 +63,8 @@ def copy_text(date,month,year,url,dri):
             a = main_div.find_elements_by_tag_name("a")[i]
             text_name = a.text
             print('Handling language',text_name)
-            f = open(path+text_name+".txt",'w',encoding="utf-8")
+            key_name = "Parallel-"+text_name
+            f = open(path+rid+text_name+".txt",'w',encoding="utf-8")
             a.click()
             wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
             modal = dri.find_elements_by_class_name("ModalWindow")[0]
@@ -80,12 +82,20 @@ def copy_text(date,month,year,url,dri):
                 f.write(pre[0].text.strip()+"\n")
             print("loop done")
             f.close()
+            curr_list = [path+rid+"English.txt",path+rid+text_name+".txt"]
+            if(memo.get(key_name) is not None):
+                memo[key_name].append(curr_list)
+            else:
+                memo[key_name] = []
+                memo[key_name].append(["English_filename",text_name+"_filename"]);
+                memo[key_name].append(curr_list)
         except StaleElementReferenceException as e:
             print(e)
         except ElementClickInterceptedException as e:
             print(e)
     end1 = time.time()
     print('Time taken for one document for all '+str(len(a_tags))+' languages is ',end1-start1)
+    return memo
 
 def select_value(wait,select,value):
     select.select_by_visible_text(value)
@@ -98,6 +108,7 @@ def main(day,month,year):
     webdriver1 = get_driver()
     dri = get_driver()
     print('Finished initalize')
+    memo = {}
     with webdriver1 as driver:
         wait = WebDriverWait(driver,50)
         driver.get(query_url)
@@ -116,7 +127,7 @@ def main(day,month,year):
         div_search = driver.find_elements_by_class_name("search_box_result")[0].text
         num = div_search.split(' ')[1]
         num = int(num)
-        for i in range(1,num):
+        for i in range(1,num+1):
             try:
                 ul = div.find_elements_by_xpath('//*[@id="form1"]/section[2]/div/div[7]/div/div/ul['+str(i)+']')[0]
                 li = ul.find_elements_by_tag_name("li")[0]
@@ -127,12 +138,16 @@ def main(day,month,year):
                     a = li_one.find_elements_by_tag_name("a")[0]
                     print(a.text)
                     print(a.get_attribute("href"))
-                    copy_text(day,month,year,a.get_attribute("href"),dri)
+                    memo = copy_text(day,month,year,a.get_attribute("href"),dri,memo)
             except IndexError as e:
                 print(e)
                 break
         driver.close()
     dri.close()
+    for key in memo.keys():
+        csv_list = memo[key]
+        df = pd.DataFrame(csv_list)
+        df.to_csv(month+"-"+key+".csv",index=False,header=False,mode='a')
     end = time.time()
     print('Time taken',end-start)
 
