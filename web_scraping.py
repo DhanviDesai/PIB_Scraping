@@ -24,13 +24,14 @@ def get_driver():
         print(e)
         get_driver()
 
-def copy_text(date,month,year,url,dri,memo):
+def copy_text(date,month,year,url,dri,memo,list_rid):
     start1 = time.time()
     rid = url.split("=")[1]
-    path = os.getcwd()+"\\"+year+"\\"+month+"\\"+date+"\\"+rid+"\\"
-    filepath = year+"\\"+month+"\\"+date+"\\"+rid+"\\"
+    path = os.getcwd()+"\\"+year+"\\"+month+"\\"+date+"\\"
+    filepath = year+"\\"+month+"\\"+date+"\\"
     Path(path).mkdir(parents=True,exist_ok=True)
-    f = open(path+"English.txt","w",encoding="utf-8")
+    f = open(path+rid+"-English.txt","w",encoding="utf-8")
+    list_rid.append(rid)
     r = requests.get(url,timeout=100)
     soup = BeautifulSoup(r.text,"html.parser")
     div_text_center = soup.find_all("div",attrs={"class":"text-center"})
@@ -54,7 +55,7 @@ def copy_text(date,month,year,url,dri,memo):
     print('wrote english')
     release_lang = soup.find("div",attrs={"class":"ReleaseLang"})
     if(release_lang is None):
-        return memo
+        return memo,list_rid
     a_tags = release_lang.find_all("a")
     print(len(a_tags))
     for i in range(len(a_tags)):
@@ -71,7 +72,7 @@ def copy_text(date,month,year,url,dri,memo):
             print('Handling language',text_name)
             key_name = "Parallel1-"+text_name
             a.click()
-            wait.until(presence_of_element_located((By.CLASS_NAME,"releaseId")))
+            wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
             modal = dri.find_elements_by_class_name("ModalWindow")[0]
             print('Finished Modal')
             release_id = modal.find_elements_by_class_name("releaseId")[0].text
@@ -79,6 +80,7 @@ def copy_text(date,month,year,url,dri,memo):
             releaseId = release_id.split(':')[1].replace(' ','').replace(')','')
             print(releaseId)
             f = open(path+releaseId+"-"+text_name+".txt",'w',encoding="utf-8")
+            list_rid.append(releaseId)
             text_center = modal.find_elements_by_class_name("text-center")
             print('Number of text_center',len(text_center))
             for text1 in text_center:
@@ -93,7 +95,7 @@ def copy_text(date,month,year,url,dri,memo):
                 f.write(pre[0].text.strip()+"\n")
             print("loop done")
             f.close()
-            curr_list = [filepath+"English.txt",filepath+releaseId+"-"+text_name+".txt"]
+            curr_list = [filepath+rid+"-English.txt",filepath+releaseId+"-"+text_name+".txt"]
             if(memo.get(key_name) is not None):
                 memo[key_name].append(curr_list)
             else:
@@ -104,11 +106,12 @@ def copy_text(date,month,year,url,dri,memo):
         except ElementClickInterceptedException as e:
             print(e)
         except IndexError as e:
-            print('Here inner function')
+            print(e)
+        except TimeoutException as e:
             print(e)
     end1 = time.time()
     print('Time taken for one document for all '+str(len(a_tags))+' languages is ',end1-start1)
-    return memo
+    return memo,list_rid
 
 def select_value(wait,select,value):
     select.select_by_visible_text(value)
@@ -120,6 +123,7 @@ def populate_data(day,month,year,driver,dri):
     query_url = "https://www.pib.gov.in/allRel.aspx"
     print('Finished initalize')
     memo = {}
+    list_rid=[]
     wait = WebDriverWait(driver,200)
     driver.get(query_url)
     wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
@@ -159,7 +163,7 @@ def populate_data(day,month,year,driver,dri):
                 a = li_one.find_elements_by_tag_name("a")[0]
                 print(a.text)
                 print(a.get_attribute("href"))
-                memo = copy_text(day,month,year,a.get_attribute("href"),dri,memo)
+                memo,list_rid = copy_text(day,month,year,a.get_attribute("href"),dri,memo,list_rid)
         except IndexError as e:
             print('Here inside populate_data')
             print(e)
@@ -174,6 +178,9 @@ def populate_data(day,month,year,driver,dri):
             df.to_csv(month+"-"+key+".csv",index=False,header=header,mode='a')
         else:
             df.to_csv(month+"-"+key+".csv",index=False,header=False,mode='a')
+    f1 = open('Rid.txt','w')
+    for r in list_rid:
+        f1.write(r+"|")
     end = time.time()
     print('Time taken',end-start)
     return 'Done'
