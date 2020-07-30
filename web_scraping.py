@@ -31,13 +31,16 @@ def copy_text(date,month,year,url,dri,memo):
     filepath = year+"\\"+month+"\\"+date+"\\"+rid+"\\"
     Path(path).mkdir(parents=True,exist_ok=True)
     f = open(path+"English.txt","w",encoding="utf-8")
-    r = requests.get(url)
+    r = requests.get(url,timeout=100)
     soup = BeautifulSoup(r.text,"html.parser")
     div_text_center = soup.find_all("div",attrs={"class":"text-center"})
     for div in div_text_center:
-        if(div.text.strip() != ""):
-            text = ' '.join(div.text.split())
-            f.write(text+"\n")
+        if(div.get_text(separator='\r').strip() != ''):
+            if 'ReleaseDateSubHeaddateTime' in div.attrs['class']:
+                text1 = ' '.join(div.get_text(separator='\r').strip().split())
+            else:
+                text1 = div.get_text(separator='\r').strip()
+            f.write(text1+"\n")
     p_tags = soup.find_all("p")
     go_through = len(p_tags)//2
     for p in p_tags[:go_through]:
@@ -57,7 +60,7 @@ def copy_text(date,month,year,url,dri,memo):
     for i in range(len(a_tags)):
         try:
             print("Starting lang")
-            wait = WebDriverWait(dri,100)
+            wait = WebDriverWait(dri,200)
             dri.get(url)
             wait.until(presence_of_element_located((By.CLASS_NAME,"ReleaseLang")))
             print("wait done")
@@ -68,11 +71,14 @@ def copy_text(date,month,year,url,dri,memo):
             print('Handling language',text_name)
             key_name = "Parallel1-"+text_name
             a.click()
-            wait.until(presence_of_element_located((By.CLASS_NAME,"ModalWindow")))
+            wait.until(presence_of_element_located((By.CLASS_NAME,"releaseId")))
             modal = dri.find_elements_by_class_name("ModalWindow")[0]
+            print('Finished Modal')
             release_id = modal.find_elements_by_class_name("releaseId")[0].text
+            print(release_id)
             releaseId = release_id.split(':')[1].replace(' ','').replace(')','')
-            f = open(path+releaseId+text_name+".txt",'w',encoding="utf-8")
+            print(releaseId)
+            f = open(path+releaseId+"-"+text_name+".txt",'w',encoding="utf-8")
             text_center = modal.find_elements_by_class_name("text-center")
             print('Number of text_center',len(text_center))
             for text1 in text_center:
@@ -87,7 +93,7 @@ def copy_text(date,month,year,url,dri,memo):
                 f.write(pre[0].text.strip()+"\n")
             print("loop done")
             f.close()
-            curr_list = [filepath+"English.txt",filepath+releaseId+text_name+".txt"]
+            curr_list = [filepath+"English.txt",filepath+releaseId+"-"+text_name+".txt"]
             if(memo.get(key_name) is not None):
                 memo[key_name].append(curr_list)
             else:
@@ -96,6 +102,9 @@ def copy_text(date,month,year,url,dri,memo):
         except StaleElementReferenceException as e:
             print(e)
         except ElementClickInterceptedException as e:
+            print(e)
+        except IndexError as e:
+            print('Here inner function')
             print(e)
     end1 = time.time()
     print('Time taken for one document for all '+str(len(a_tags))+' languages is ',end1-start1)
@@ -111,7 +120,7 @@ def populate_data(day,month,year,driver,dri):
     query_url = "https://www.pib.gov.in/allRel.aspx"
     print('Finished initalize')
     memo = {}
-    wait = WebDriverWait(driver,100)
+    wait = WebDriverWait(driver,200)
     driver.get(query_url)
     wait.until(presence_of_element_located((By.CLASS_NAME,"content-area")))
     print('Finished loading')
@@ -135,8 +144,10 @@ def populate_data(day,month,year,driver,dri):
         return 'Stop'
     div = driver.find_elements_by_class_name("content-area")[0]
     div_search = driver.find_elements_by_class_name("search_box_result")[0].text
+    print(div_search)
     num = div_search.split(' ')[1]
     num = int(num)
+    print(num)
     for i in range(1,num+1):
         try:
             ul = div.find_elements_by_xpath('//*[@id="form1"]/section[2]/div/div[7]/div/div/ul['+str(i)+']')[0]
@@ -144,11 +155,13 @@ def populate_data(day,month,year,driver,dri):
             ul_leftul = li.find_elements_by_tag_name("ul")[0]
             lis = ul_leftul.find_elements_by_tag_name("li")
             for li_one in lis:
+                # li_one = driver.find_elements_by_xpath('//*[@id="form1"]/section[2]/div/div[7]/div/div/ul[3]/li/ul/li[3]')[0]
                 a = li_one.find_elements_by_tag_name("a")[0]
                 print(a.text)
                 print(a.get_attribute("href"))
                 memo = copy_text(day,month,year,a.get_attribute("href"),dri,memo)
         except IndexError as e:
+            print('Here inside populate_data')
             print(e)
             break
     for key in memo.keys():
