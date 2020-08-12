@@ -61,12 +61,11 @@ def tokenize_hi_file(mainHinString):
     return sentences
 
 
-def tokenize_file(month):
+def tokenize_file(month,year):
     # month = 'February'
     file_base_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"
-    file_eng_base_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\2020\\"+month+"\\All\\"
-    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\2020\\"+month+"\\Tokenized-Mine\\"
-    df = pd.read_csv("C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+month+"-2020-Parallel-Hindi.csv")
+    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized-Mine\\"
+    df = pd.read_csv("C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+month+"-"+year+"-Parallel-Hindi.csv")
 
     total_en_sentences = []
     total_hi_sentences = []
