@@ -202,7 +202,7 @@ def select_value(wait,select,value):
     print('Finished selecting',value)
 
 
-def populate_data(driver,dri,day,month,year):
+def populate_data(driver,dri,day,month,year,path_parallel_csv):
     start = time.time()
     query_url = "https://www.pib.gov.in/allRel.aspx"
     print('Finished initalize')
@@ -260,10 +260,10 @@ def populate_data(driver,dri,day,month,year):
         df = pd.DataFrame(csv_list)
         filename = month+"-"+year+"-"+key+".csv"
         if(not os.path.exists(filename)):
-            df.to_csv(month+"-"+year+"-"+key+".csv",index=False,header=header,mode='a')
+            df.to_csv(path_parallel_csv+month+"-"+key+".csv",index=False,header=header,mode='a')
         else:
-            df.to_csv(month+"-"+year+"-"+key+".csv",index=False,header=False,mode='a')
-    f1 = open(month+'-'+year+'-Rid.txt','w')
+            df.to_csv(path_parallel_csv+month+"-"+key+".csv",index=False,header=False,mode='a')
+    f1 = open(path_parallel_csv+month+'-Rid.txt','w')
     for r in list_rid:
         f1.write(r+"|")
     end = time.time()

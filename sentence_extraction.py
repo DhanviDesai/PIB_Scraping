@@ -7,8 +7,8 @@ import re
 
 def tokenize_eng_file(mainString):
     sentences = []
-    e = '((?<=[^A-Z])\. +(?=[^a-z0-9 ])|\n|\*|\([MDCLXVImdclxvi]+\)|^[0-9]+\.[^0-9])'
-    mainString = mainString.replace('.','. ')
+    e = '((?<=[^A-Z])\. +(?=[^a-z0-9 ])|\? |\n|\*|\([MDCLXVImdclxvi]+\)|^[0-9]+\.[^0-9])'
+    mainString = re.sub('(?<=[^A-Z0-9])\.','. ',mainString)
     mainString = mainString.replace('Prof. ','Prof.')
     mainString = mainString.replace('Dr. ','Dr.')
     mainString = mainString.replace('Mr. ','Mr.')
@@ -33,6 +33,9 @@ def tokenize_eng_file(mainString):
             sentences[-1] += s[0]
             # splitString[i+1] = s[2] + splitString[i+1]
             continue
+        if(re.search('\? $',s) is not None):
+            sentences[-1] += s[0]
+            continue
         if(re.search('^[0-9]+\.[^0-9]',s) is not None):
             continue
         if('*' in s):
@@ -41,7 +44,7 @@ def tokenize_eng_file(mainString):
     return sentences
 
 def tokenize_hi_file(mainHinString):
-    e = '(। +|\n|\*|\([MDCLXVImdclxvi]+\)|[0-9]+\.[^0-9])'
+    e = '(। +|\? |\n|\*|\([MDCLXVImdclxvi]+\)|[0-9]+\.[^0-9])'
     sentences = []
     splitString = re.split(e,mainHinString)
     for i,s in enumerate(splitString):
@@ -49,6 +52,8 @@ def tokenize_hi_file(mainHinString):
             continue
         if(s == '\n'):
             continue
+        if(re.search('\? $',s) is not None):
+            sentences[-1] += s[0]
         if(re.search('\([MDCLXVImdclxvi]+\)$',s) is not None):
             splitString[i+1] = s + splitString[i+1]
             continue
@@ -61,11 +66,11 @@ def tokenize_hi_file(mainHinString):
     return sentences
 
 
-def tokenize_file(month,year):
+def tokenize_file(month,year,base_path,parallel_file_path,tokenized_file_path,total_sentences_path):
     # month = 'February'
-    file_base_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"
-    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized-Mine\\"
-    df = pd.read_csv("C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+month+"-"+year+"-Parallel-Hindi.csv")
+    #file_base_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"
+    #file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized-Mine\\"
+    df = pd.read_csv(parallel_file_path+month+"-Parallel-Hindi.csv")
 
     total_en_sentences = []
     total_hi_sentences = []
@@ -80,9 +85,9 @@ def tokenize_file(month,year):
             en = df['English_Filename'][i]
             hi = df['Hindi_Filename'][i]
             print(en)
-            file_en_path = file_tokenized_path+en.split("\\")[-1]
-            file_hi_path = file_tokenized_path+hi.split("\\")[-1]
-            with open(file_base_path+en,'r',encoding='utf-8') as file_en:
+            file_en_path = tokenized_file_path+en.split("\\")[-1]
+            file_hi_path = tokenized_file_path+hi.split("\\")[-1]
+            with open(base_path+en,'r',encoding='utf-8') as file_en:
                 sentences = tokenize_eng_file(file_en.read())
                 with open(file_en_path,'w',encoding='utf-16') as file_en_w:
                     for s in sentences:
@@ -90,7 +95,7 @@ def tokenize_file(month,year):
                             continue
                         file_en_w.write(s+"\n")
                         total_en_sentences.append([s,i])
-            with open(file_base_path+hi,'r',encoding='utf-8') as file_hi:
+            with open(base_path+hi,'r',encoding='utf-8') as file_hi:
                 sentences = tokenize_hi_file(file_hi.read())
                 with open(file_hi_path,'w',encoding='utf-16') as file_hi_w:
                     for s in sentences:
@@ -99,14 +104,14 @@ def tokenize_file(month,year):
                         file_hi_w.write(s+"\n")
                         total_hi_sentences.append([s,i])
 
-    csv_path = os.getcwd()+"\\CSV_Files\\"+month+"-2020"
+    #csv_path = os.getcwd()+"\\CSV_Files\\"+month+"-2020"
     df_en = pd.DataFrame(total_en_sentences)
-    df_en.to_csv(csv_path+'-Total-English-Sentences.csv',header=header_en,index=False)
+    df_en.to_csv(total_sentences_path+'Total-English-Sentences.csv',header=header_en,index=False)
 
     df_hi = pd.DataFrame(total_hi_sentences)
-    df_hi.to_csv(csv_path+'-Total-Hindi-Sentences.csv',header=header_hi,index=False)
+    df_hi.to_csv(total_sentences_path+'Total-Hindi-Sentences.csv',header=header_hi,index=False)
 
-    winsound.Beep(2500,1000)
+    winsound.Beep(1500,10)
 
 
 if __name__ == "__main__":
