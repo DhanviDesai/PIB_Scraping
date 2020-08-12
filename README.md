@@ -1,6 +1,6 @@
 # PIB_Scraping
 
-# Creates all the directories and files in the current directory
+### Creates all the directories and files in the current directory
 
 To run : python wrapper.py 'year' 'whetherScrape?' 'whetherTokenize?' 'whetherAlign?'
 
