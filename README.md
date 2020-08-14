@@ -30,7 +30,7 @@ aligning.py is used for aligning the two parallel files. This is to be run after
 The code only scraps Hindi and English parallel documents. The code scraps and generates a parallel lookup csv file in the current directory.
 
 
-## To run only aligner
+# To run only aligner
 
 To run : python aligning.py
 
