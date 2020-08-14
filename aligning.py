@@ -5,6 +5,7 @@ from io import StringIO
 import time
 import pandas as pd
 import winsound
+from pathlib import Path
 
 def upload_document(token, filepath, fileType='file/txt'):
     data = open(filepath, 'rb')
@@ -27,12 +28,11 @@ def download_file(token, save_dir, file_id, prefix, appendList,extension='.txt')
     try:
         r = requests.get(url, headers=header, timeout=10)
         # print(r)
-        with open(os.path.join(save_dir,prefix + extension), 'wb') as f:
-            f.write(r.content)
-            list_lines = r.content.decode("utf-16").split("\n")
-            appendList.append([s.replace('\r','') for s in list_lines if s.strip() != ''])
+        list_lines = r.content.decode("utf-16").split("\n")
+        for s in list_lines:
+            appendList.append(s.replace('\r','')
             # print('file %s, downloaded at %s' % (file_id, save_dir))
-            return appendList
+        return appendList
     except requests.exceptions.Timeout:
         print(f'Timeout for URL: {url}')
         return
@@ -116,6 +116,8 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
 
     almost_match_list = []
     match_list = []
+    
+    Path(output_path).mkdir(parents=True,exist_ok=True)
 
     english_match=[]
     english_am=[]
@@ -123,7 +125,7 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
     hindi_am=[]
     header_matches = ["File No","English_Sen","Hindi_Sen","English_Link","Hindi_Link"]
     base_url = "https://www.pib.gov.in/PressReleasePage.aspx?PRID="
-    df = pd.read_csv(parallel_file_path+month+"-Parallel-Hindi.csv")
+    df = pd.read_csv(parallel_file_path)
 
 #    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized\\"
 #    output_dir = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Aligned"
@@ -137,19 +139,29 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
         hrid = hin_filename.split('-')[0]
         print('handling file with id ',i)
         print(en)
-        file_en_path = tokenized_file_path+en.split("\\")[-1]
-        file_hi_path = tokenized_file_path+hi.split("\\")[-1]
+        file_en_path = os.path.join(tokenized_file_path,en.split("\\")[-1])
+        file_hi_path = os.path.join(tokenized_file_path,hi.split("\\")[-1])
         english_match,english_am,hindi_match,hindi_am=extract_bitext(bearerToken,output_path,file_en_path,file_hi_path,english_match,english_am,hindi_match,hindi_am)
+        fen_m = open(os.path.join(output_path,rid+"-English-Match.txt"))
+        fhi_m = open(os.path.join(output_path,hrid+"-Hindi-Match.txt"))
+        fen_am = open(os.path.join(output_path,rid+"-English-Almost-Match.txt"))
+        fhi_am = open(os.path.join(output_path,hrid+"-Hindi-Almost-Match.txt"))
 
-        for j,sen in enumerate(english_match[0]):
-            match_list.append([i,sen,hindi_match[0][j],base_url+rid,base_url+hrid])
+        for j,sen in enumerate(english_match):
+            if(len(sen.split())>4 or len(hindi_match[j])>4):
+                fen_m.write(sen+'\n')
+                fhi_m.write(hindi_match[j]+"\n")
+                match_list.append([i,sen,hindi_match[j],base_url+rid,base_url_hrid])
 
-        for j,sen in enumerate(english_am[0]):
-            almost_match_list.append([i,sen,hindi_am[0][j],base_url+rid,base_url+hrid])
+        for j,sen in enumerate(english_am):
+            if(len(sen.split())>4 or len(hindi_am[j].split())>4):
+                fen_am.write(sen+"\n")
+                fhi_am.write(hindi_am[j]+"\n")
+                almost_match_list.append([i,sen,hindi_am[j],base_url+rid,base_url+hrid])
 
         if(len(match_list) > 0):
             df_m = pd.DataFrame(match_list)
-            file_name_total = output_csv_file+'Total-Match.csv'
+            file_name_total = os.path.join(output_csv_file,'Total-Match.csv')
             if(not os.path.exists(file_name_total)):
                 df_m.to_csv(file_name_total,header=header_matches,index=False,mode='a')
             else:
@@ -157,7 +169,7 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
 
         if(len(almost_match_list) > 0):
             df_am = pd.DataFrame(almost_match_list)
-            file_name_am = output_csv_file+'Total-Almost-Match.csv'
+            file_name_am = os.path.join(output_csv_file,'Total-Almost-Match.csv')
             if(not os.path.exists(file_name_am)):
                 df_am.to_csv(file_name_am,header=header_matches,index=False,mode='a')
             else:
@@ -169,8 +181,19 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
         hindi_am = []
         match_list = []
         almost_match_list = []
+        fen_m.close()
+        fhi_m.close()
+        fen_am.close()
+        fhi_am.close()
 
         winsound.Beep(1000,10)
 
 if __name__ == "__main__":
-    main()
+    month = 'January'
+    year = '2019'
+    base_path = 'C:\\Users\\Dhanvi\\PIB_Scraping-3\\'
+    parallel_file_path = os.path.join(base_path,year,month,"Parallel-Hindi.csv")
+    tokenized_file_path = os.path.join(base_path,year,month,"Tokenized-Mine-No-Constraints")
+    output_path = os.path.join(base_path,year,month,"Aligned")
+    output_csv_file = os.path.join(base_path,year,month)
+    start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,output_csv_file)

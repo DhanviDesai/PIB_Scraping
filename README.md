@@ -1,6 +1,7 @@
 # PIB_Scraping
 
-### Creates all the directories and files in the current directory
+#### Creates all the directories and files in the current directory
+#### Tokenizer in this for now discards sentences that have 4 or less than 4 words. This is not feasible. For now aligning works fine 
 
 To run : python wrapper.py 'year' 'whetherScrape?' 'whetherTokenize?' 'whetherAlign?'
 
@@ -27,3 +28,10 @@ sentence_extraction.py has the code for tokenization of scraped data. Tokenizati
 aligning.py is used for aligning the two parallel files. This is to be run after tokenization. It also creates a csv file of all the matched and almost matched sentences. 
 
 The code only scraps Hindi and English parallel documents. The code scraps and generates a parallel lookup csv file in the current directory.
+
+
+## To run only aligner
+
+To run : python aligning.py
+
+Specify the base_path (root folder) of the downloaded scraped and tokenized files. Program then aligns the two parallel files and writes the most and almost_matched sentences in their respective files . These are the sentences that have more then 4 words. By testing, it was noticed that it is more feasible to discard sentences only after aligning. There will be sentences that have more than 4 words in English but its Hindi counterpart might not be so and hence we miss a sentence that can be perfectly matched. The code also generates csv files of Total-Match and Total-Almost-Match. These files also consist of only those sentences that have more than 4 words in either English or in Hindi.
