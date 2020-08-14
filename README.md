@@ -34,4 +34,6 @@ The code only scraps Hindi and English parallel documents. The code scraps and g
 
 To run : python aligning.py
 
+### Change the base_path in the code to the root folder of the downloaded tokenized files from Google Drive. The program searches for files in the same folder structure as followed in Drive. The program assumes that all Tokenized files are present in {root_folder}/year/month/Tokenized-Mine-No-Constraints. The program writes the csv file and the aligned files in the folder structure {root_folder}/year/month/Total-Match|Almost-Match.csv and {root_folder}/year/month/Aligned respectively. Any changes in the structure should be updated in the code also.
+
 Specify the base_path (root folder) of the downloaded scraped and tokenized files. Program then aligns the two parallel files and writes the most and almost_matched sentences in their respective files . These are the sentences that have more then 4 words. By testing, it was noticed that it is more feasible to discard sentences only after aligning. There will be sentences that have more than 4 words in English but its Hindi counterpart might not be so and hence we miss a sentence that can be perfectly matched. The code also generates csv files of Total-Match and Total-Almost-Match. These files also consist of only those sentences that have more than 4 words in either English or in Hindi.
