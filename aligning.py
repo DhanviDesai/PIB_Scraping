@@ -109,15 +109,13 @@ def extract_bitext(token, output_dir,source_filepath, target_filepath,english_ma
                         time.sleep(10)
                 return english_match,english_am,hindi_match,hindi_am
 
-def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,output_csv_file):
+def main(month,year,index):
     frequency = 2500
     duration = 100
     bearerToken = '439ca0d5f0484d4fbe147aa7a431ba6d|9ddf693d2b9748b796106f000a275e41'
 
     almost_match_list = []
     match_list = []
-    
-    Path(output_path).mkdir(parents=True,exist_ok=True)
 
     english_match=[]
     english_am=[]
@@ -125,12 +123,14 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
     hindi_am=[]
     header_matches = ["File No","English_Sen","Hindi_Sen","English_Link","Hindi_Link"]
     base_url = "https://www.pib.gov.in/PressReleasePage.aspx?PRID="
-    df = pd.read_csv(parallel_file_path)
+    df = pd.read_csv("C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Parallel-Hindi.csv")
 
-#    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized\\"
-#    output_dir = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Aligned"
+    file_tokenized_path = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Tokenized-Mine-No-Constraints\\"
+    output_dir = "C:\\Users\\Dhanvi\\PIB_Scraping-3\\"+year+"\\"+month+"\\Aligned"
 
-    for i in range(len(df)):
+    Path(output_dir).mkdir(parents=True,exist_ok=True)
+
+    for i in range(index,len(df)):
         en = df['English_Filename'][i]
         hi = df['Hindi_Filename'][i]
         eng_filename = en.split('\\')[-1]
@@ -139,29 +139,27 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
         hrid = hin_filename.split('-')[0]
         print('handling file with id ',i)
         print(en)
-        file_en_path = os.path.join(tokenized_file_path,en.split("\\")[-1])
-        file_hi_path = os.path.join(tokenized_file_path,hi.split("\\")[-1])
-        english_match,english_am,hindi_match,hindi_am=extract_bitext(bearerToken,output_path,file_en_path,file_hi_path,english_match,english_am,hindi_match,hindi_am)
-        fen_m = open(os.path.join(output_path,rid+"-English-Match.txt"))
-        fhi_m = open(os.path.join(output_path,hrid+"-Hindi-Match.txt"))
-        fen_am = open(os.path.join(output_path,rid+"-English-Almost-Match.txt"))
-        fhi_am = open(os.path.join(output_path,hrid+"-Hindi-Almost-Match.txt"))
-
+        file_en_path = file_tokenized_path+en.split("\\")[-1]
+        file_hi_path = file_tokenized_path+hi.split("\\")[-1]
+        english_match,english_am,hindi_match,hindi_am=extract_bitext(bearerToken,output_dir,file_en_path,file_hi_path,english_match,english_am,hindi_match,hindi_am)
+        fen_m = open(output_dir+'\\'+rid+'-English-Match.txt','w',encoding = 'utf-8')
+        fhi_m = open(output_dir+"\\"+hrid+"-Hindi-Match.txt",'w',encoding = 'utf-8')
+        fen_am = open(output_dir+'\\'+rid+'-English-AMatch.txt','w',encoding = 'utf-8')
+        fhi_am = open(output_dir+"\\"+hrid+"-Hindi-AMatch.txt",'w',encoding = 'utf-8')
         for j,sen in enumerate(english_match):
-            if(len(sen.split())>4 or len(hindi_match[j])>4):
-                fen_m.write(sen+'\n')
+            if(len(sen.split()) > 4 or len(hindi_match[j].split()) > 4 and sen.strip() != '' and hindi_match[j].strip() != ''):
+                fen_m.write(sen+"\n")
                 fhi_m.write(hindi_match[j]+"\n")
-                match_list.append([i,sen,hindi_match[j],base_url+rid,base_url_hrid])
-
+                match_list.append([i,sen,hindi_match[j],base_url+rid,base_url+hrid])
         for j,sen in enumerate(english_am):
-            if(len(sen.split())>4 or len(hindi_am[j].split())>4):
+            if(len(sen.split()) > 4 or len(hindi_am[j].split()) > 4):
                 fen_am.write(sen+"\n")
                 fhi_am.write(hindi_am[j]+"\n")
                 almost_match_list.append([i,sen,hindi_am[j],base_url+rid,base_url+hrid])
 
         if(len(match_list) > 0):
             df_m = pd.DataFrame(match_list)
-            file_name_total = os.path.join(output_csv_file,'Total-Match.csv')
+            file_name_total = 'Aligned_CSV\\'+month+'-'+year+'-Total-Match.csv'
             if(not os.path.exists(file_name_total)):
                 df_m.to_csv(file_name_total,header=header_matches,index=False,mode='a')
             else:
@@ -169,7 +167,7 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
 
         if(len(almost_match_list) > 0):
             df_am = pd.DataFrame(almost_match_list)
-            file_name_am = os.path.join(output_csv_file,'Total-Almost-Match.csv')
+            file_name_am = 'Aligned_CSV\\'+month+'-'+year+'-Total-Almost-Match.csv'
             if(not os.path.exists(file_name_am)):
                 df_am.to_csv(file_name_am,header=header_matches,index=False,mode='a')
             else:
@@ -188,12 +186,6 @@ def start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,
 
         winsound.Beep(1000,10)
 
+
 if __name__ == "__main__":
-    month = 'January'
-    year = '2019'
-    base_path = 'C:\\Users\\Dhanvi\\PIB_Scraping-3\\'
-    parallel_file_path = os.path.join(base_path,year,month,"Parallel-Hindi.csv")
-    tokenized_file_path = os.path.join(base_path,year,month,"Tokenized-Mine-No-Constraints")
-    output_path = os.path.join(base_path,year,month,"Aligned")
-    output_csv_file = os.path.join(base_path,year,month)
-    start_aligner(month,year,parallel_file_path,tokenized_file_path,output_path,output_csv_file)
+    main('August','2020',0)
